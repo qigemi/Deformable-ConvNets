@@ -81,7 +81,10 @@ If you find Deformable ConvNets useful in your research, please consider citing:
 
 1. MXNet from [the offical repository](https://github.com/dmlc/mxnet). We tested our code on [MXNet@(commit 62ecb60)](https://github.com/dmlc/mxnet/tree/62ecb60). Due to the rapid development of MXNet, it is recommended to checkout this version if you encounter any issues. We may maintain this repository periodically if MXNet adds important feature in future release.
 
-2. Python 2.7. We recommend using Anaconda2
+2. Python 2.7. We recommend using Anaconda2 as it already includes many common packages. We do not suppoort Python 3 yet, if you want to use Python 3 you need to modify the code to make it work.
+
+
+
 
 3. Python packages might missing: cython, opencv-python >= 3.2.0, easydict. If `pip` is set up on your system, those packages should be able to be fetched and installed by running
 	```
@@ -120,7 +123,7 @@ git clone https://github.com/msracver/Deformable-ConvNets.git
 	3.3 Compile MXNet
 	```
 	cd ${MXNET_ROOT}
-	make -j4
+	make -j $(nproc) USE_OPENCV=1 USE_BLAS=openblas USE_CUDA=1 USE_CUDA_PATH=/usr/local/cuda USE_CUDNN=1
 	```
 	3.4 Install the MXNet Python binding by
 	
