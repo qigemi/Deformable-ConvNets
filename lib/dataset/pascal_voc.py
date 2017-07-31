@@ -33,13 +33,15 @@ class PascalVOC(IMDB):
         :return: imdb object
         """
         year = image_set.split('_')[0]
+        print 'database'
+        print image_set
         image_set = image_set[len(year) + 1 : len(image_set)]
         super(PascalVOC, self).__init__('voc_' + year, image_set, root_path, devkit_path, result_path)  # set self.name
 
         self.year = year
         self.root_path = root_path
         self.devkit_path = devkit_path
-        self.data_path = os.path.join(devkit_path, 'VOC' + year)
+        self.data_path = os.path.join(devkit_path, 'VOC' + year+'_trainval')
 
         self.classes = ['__background__',  # always index 0
                         'aeroplane', 'bicycle', 'bird', 'boat',

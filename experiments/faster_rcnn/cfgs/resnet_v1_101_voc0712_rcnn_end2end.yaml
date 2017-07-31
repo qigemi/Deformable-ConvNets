@@ -2,7 +2,7 @@
 MXNET_VERSION: "mxnet"
 output_path: "./output/rcnn/voc"
 symbol: resnet_v1_101_rcnn
-gpus: '0,1,2,3'
+gpus: '1,2,3'
 CLASS_AGNOSTIC: false
 SCALES:
 - 600
@@ -17,6 +17,7 @@ network:
   - 103.06
   - 115.90
   - 123.15
+  PIXEL_STD: 1
   IMAGE_STRIDE: 0
   RCNN_FEAT_STRIDE: 16
   RPN_FEAT_STRIDE: 16
@@ -50,9 +51,9 @@ network:
 dataset:
   NUM_CLASSES: 21
   dataset: PascalVOC
-  dataset_path: "./data/VOCdevkit"
+  dataset_path: "/home/foto1/Database/VOC_PASCAL"
   image_set: 2007_trainval+2012_trainval
-  root_path: "./data"
+  root_path: "/home/foto1/Database"
   test_image_set: 2007_test
   proposal: rpn
 TRAIN:

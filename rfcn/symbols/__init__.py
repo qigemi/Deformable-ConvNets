@@ -2,3 +2,7 @@ import resnet_v1_101_rfcn
 import resnet_v1_101_rfcn_dcn
 import deform_conv_demo
 import deform_psroi_demo
+import dpn_92_rfcn_dcn
+import dpn_92_rfcn
+import resnext101_32x4d_rfcn
+import resnext101_32x4d_rfcn_dcn

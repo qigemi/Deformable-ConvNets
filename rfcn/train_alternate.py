@@ -94,7 +94,7 @@ def alternate_train(args, ctx, pretrained, epoch):
               train_shared=True, lr=config.TRAIN.ALTERNATE.rpn2_lr, lr_step=config.TRAIN.ALTERNATE.rpn2_lr_step, logger=logger,
               output_path=output_path)
 
-    logging.info('########## GENERATE RPN DETECTION')
+    logging.info('########## GENERATE RPN  FIXED_PARAMS_SHAREDDETECTION')
     image_sets = [iset for iset in config.dataset.image_set.split('+')]
     for image_set in image_sets:
         test_rpn(config, config.dataset.dataset, image_set, config.dataset.root_path, config.dataset.dataset_path,

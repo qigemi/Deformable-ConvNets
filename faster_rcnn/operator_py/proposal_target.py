@@ -21,6 +21,22 @@ from core.rcnn import sample_rois
 
 DEBUG = False
 
+def _jitter_gt_boxes(gt_boxes, jitter=0.05):
+    """ jitter the gtboxes, before adding them into rois, to be more robust for cls and rgs
+    gt_boxes: (G, 5) [x1 ,y1 ,x2, y2, class] int
+    """
+    jittered_boxes = gt_boxes.copy()
+    ws = jittered_boxes[:, 2] - jittered_boxes[:, 0] + 1.0
+    hs = jittered_boxes[:, 3] - jittered_boxes[:, 1] + 1.0
+    width_offset = (np.random.rand(jittered_boxes.shape[0]) - 0.5) * jitter * ws
+    height_offset = (np.random.rand(jittered_boxes.shape[0]) - 0.5) * jitter * hs
+    jittered_boxes[:, 0] += width_offset
+    jittered_boxes[:, 2] += width_offset
+    jittered_boxes[:, 1] += height_offset
+    jittered_boxes[:, 3] += height_offset
+
+    return jittered_boxes
+
 
 class ProposalTargetOperator(mx.operator.CustomOp):
     def __init__(self, num_classes, batch_images, batch_rois, cfg, fg_fraction):
@@ -114,3 +130,4 @@ class ProposalTargetProp(mx.operator.CustomOpProp):
 
     def declare_backward_dependency(self, out_grad, in_data, out_data):
         return []
+
