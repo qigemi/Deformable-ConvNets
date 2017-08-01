@@ -23,7 +23,7 @@ This is an official implementation for [Deformable Convolutional Networks](https
 
 * The original implementation is based on our internal Caffe version on Windows. There are slight differences in the final accuracy and running time due to the plenty details in platform switch.
   * The code is tested on official [MXNet@(commit 62ecb60)](https://github.com/dmlc/mxnet/tree/62ecb60) with the extra operators for Deformable ConvNets.
-   * After [MXNet@(commit ce2bca6)](https://github.com/dmlc/mxnet/tree/ce2bca6) the offical MXNet support all operators for Deformable ConvNets.
+  * After [MXNet@(commit ce2bca6)](https://github.com/dmlc/mxnet/tree/ce2bca6) the offical MXNet support all operators for Deformable ConvNets.
   * We trained our model based on the ImageNet pre-trained [ResNet-v1-101](https://github.com/KaimingHe/deep-residual-networks) using a [model converter](https://github.com/dmlc/mxnet/tree/430ea7bfbbda67d993996d81c7fd44d3a20ef846/tools/caffe_converter). The converted model produces slightly lower accuracy (Top-1 Error on ImageNet val: 24.0% v.s. 23.6%).
   * This repository used code from [MXNet rcnn example](https://github.com/dmlc/mxnet/tree/master/example/rcnn) and [mx-rfcn](https://github.com/giorking/mx-rfcn).
 
@@ -51,12 +51,12 @@ If you find Deformable ConvNets useful in your research, please consider citing:
 
 ## Main Results
 
-|                                          | training data      | testing data | mAP@0.5 | mAP@0.7 | time  |
-| ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ----- |
-| R-FCN, ResNet-v1-101                     | VOC 07+12 trainval | VOC 07 test  | 79.6    | 63.1    | 0.16s |
-| Deformable R-FCN, ResNet-v1-101          | VOC 07+12 trainval | VOC 07 test  | 82.3    | 67.8    | 0.19s |
-| Faster R-CNN, ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57   | 65.37   |       |
-| Deformable Faster R-CNN,ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37   | 69.77   |       |
+|                                          | training data      | testing data | mAP@0.5 | mAP@0.7 | time          |
+| ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ------------- |
+| R-FCN, ResNet-v1-101                     | VOC 07+12 trainval | VOC 07 test  | 79.6    | 63.1    | 0.16s         |
+| Deformable R-FCN, ResNet-v1-101          | VOC 07+12 trainval | VOC 07 test  | 82.3    | 67.8    | 0.19s         |
+| Faster R-CNN, ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57   | 65.37   | 0.13s(1080Ti) |
+| Deformable Faster R-CNN,ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37   | 69.77   | 0.17s(1080Ti) |
 
 
 
@@ -239,9 +239,9 @@ Q: It says `AttributeError: 'module' object has no attribute 'DeformableConvolut
 
 A: This is because either
 -  you forget to copy the operators to your MXNet folder
--  or you copy to the wrong path
--  or you forget to re-compile
--  or you install the wrong MXNet
+- or you copy to the wrong path
+- or you forget to re-compile
+- or you install the wrong MXNet
 
     Please print `mxnet.__path__` to make sure you use correct MXNet
 
