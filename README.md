@@ -21,12 +21,12 @@ The major contributors of this repository include [Yuwen Xiong](https://github.c
 
 This is an official implementation for [Deformable Convolutional Networks](https://arxiv.org/abs/1703.06211) (Deformable ConvNets) based on MXNet. It is worth noticing that:
 
-  * The original implementation is based on our internal Caffe version on Windows. There are slight differences in the final accuracy and running time due to the plenty details in platform switch.
+* The original implementation is based on our internal Caffe version on Windows. There are slight differences in the final accuracy and running time due to the plenty details in platform switch.
   * The code is tested on official [MXNet@(commit 62ecb60)](https://github.com/dmlc/mxnet/tree/62ecb60) with the extra operators for Deformable ConvNets.
-  	* After [MXNet@(commit ce2bca6)](https://github.com/dmlc/mxnet/tree/ce2bca6) the offical MXNet support all operators for Deformable ConvNets.
+   * After [MXNet@(commit ce2bca6)](https://github.com/dmlc/mxnet/tree/ce2bca6) the offical MXNet support all operators for Deformable ConvNets.
   * We trained our model based on the ImageNet pre-trained [ResNet-v1-101](https://github.com/KaimingHe/deep-residual-networks) using a [model converter](https://github.com/dmlc/mxnet/tree/430ea7bfbbda67d993996d81c7fd44d3a20ef846/tools/caffe_converter). The converted model produces slightly lower accuracy (Top-1 Error on ImageNet val: 24.0% v.s. 23.6%).
   * This repository used code from [MXNet rcnn example](https://github.com/dmlc/mxnet/tree/master/example/rcnn) and [mx-rfcn](https://github.com/giorking/mx-rfcn).
-  
+
 ## License
 
 © Microsoft, 2017. Licensed under an Apache-2.0 license.
@@ -51,28 +51,30 @@ If you find Deformable ConvNets useful in your research, please consider citing:
 
 ## Main Results
 
-|                                 | training data     | testing data | mAP@0.5 | mAP@0.7 | time   |
-|---------------------------------|-------------------|--------------|---------|---------|--------|
-| R-FCN, ResNet-v1-101            | VOC 07+12 trainval| VOC 07 test  | 79.6    | 63.1    | 0.16s |
-| Deformable R-FCN, ResNet-v1-101 | VOC 07+12 trainval| VOC 07 test  | 82.3    | 67.8    | 0.19s |
+|                                          | training data      | testing data | mAP@0.5 | mAP@0.7 | time  |
+| ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ----- |
+| R-FCN, ResNet-v1-101                     | VOC 07+12 trainval | VOC 07 test  | 79.6    | 63.1    | 0.16s |
+| Deformable R-FCN, ResNet-v1-101          | VOC 07+12 trainval | VOC 07 test  | 82.3    | 67.8    | 0.19s |
+| Faster R-CNN, ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57   | 65.37   |       |
+| Deformable Faster R-CNN,ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37   | 69.77   |       |
 
 
 
-|                                 | <sub>training data</sub> | <sub>testing data</sub>  | <sub>mAP</sub>  | <sub>mAP@0.5</sub> | <sub>mAP@0.75</sub>| <sub>mAP@S</sub> | <sub>mAP@M</sub> | <sub>mAP@L</sub> |
-|---------------------------------|---------------|---------------|------|---------|---------|-------|-------|-------|
-| <sub>R-FCN, ResNet-v1-101 </sub>           | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 32.1 | 54.3    |   33.8  | 12.8  | 34.9  | 46.1  | 
-| <sub>Deformable R-FCN, ResNet-v1-101</sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 35.7 | 56.8    | 38.3    | 15.2  | 38.8  | 51.5  |
-| <sub>Faster R-CNN (2fc), ResNet-v1-101 </sub>           | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 30.3 | 52.1    |   31.4  | 9.9  | 32.2  | 47.4  | 
-| <sub>Deformable Faster R-CNN (2fc), </br>ResNet-v1-101</sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 35.0 | 55.0    | 38.3    | 14.3  | 37.7  | 52.0  |
+|                                          | <sub>training data</sub> | <sub>testing data</sub>  | <sub>mAP</sub> | <sub>mAP@0.5</sub> | <sub>mAP@0.75</sub> | <sub>mAP@S</sub> | <sub>mAP@M</sub> | <sub>mAP@L</sub> |
+| ---------------------------------------- | ------------------------ | ------------------------ | -------------- | ------------------ | ------------------- | ---------------- | ---------------- | ---------------- |
+| <sub>R-FCN, ResNet-v1-101 </sub>         | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 32.1           | 54.3               | 33.8                | 12.8             | 34.9             | 46.1             |
+| <sub>Deformable R-FCN, ResNet-v1-101</sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 35.7           | 56.8               | 38.3                | 15.2             | 38.8             | 51.5             |
+| <sub>Faster R-CNN (2fc), ResNet-v1-101 </sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 30.3           | 52.1               | 31.4                | 9.9              | 32.2             | 47.4             |
+| <sub>Deformable Faster R-CNN (2fc), </br>ResNet-v1-101</sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 35.0           | 55.0               | 38.3                | 14.3             | 37.7             | 52.0             |
 
 
 
-|                                   | training data              | testing data   | mIoU | time  |
-|-----------------------------------|----------------------------|----------------|------|-------|
-| DeepLab, ResNet-v1-101            | Cityscapes train           | Cityscapes val | 70.3 | 0.51s |
-| Deformable DeepLab, ResNet-v1-101 | Cityscapes train           | Cityscapes val | 75.2 | 0.52s |
-| DeepLab, ResNet-v1-101            | VOC 12 train (augmented) | VOC 12 val   | 70.7 | 0.08s |
-| Deformable DeepLab, ResNet-v1-101 | VOC 12 train (augmented) | VOC 12 val   | 75.9 | 0.08s |
+|                                   | training data            | testing data   | mIoU | time  |
+| --------------------------------- | ------------------------ | -------------- | ---- | ----- |
+| DeepLab, ResNet-v1-101            | Cityscapes train         | Cityscapes val | 70.3 | 0.51s |
+| Deformable DeepLab, ResNet-v1-101 | Cityscapes train         | Cityscapes val | 75.2 | 0.52s |
+| DeepLab, ResNet-v1-101            | VOC 12 train (augmented) | VOC 12 val     | 70.7 | 0.08s |
+| Deformable DeepLab, ResNet-v1-101 | VOC 12 train (augmented) | VOC 12 val     | 75.9 | 0.08s |
 
 
 *Running time is counted on a single Maxwell Titan X GPU (mini-batch size is 1 in inference).*
@@ -87,11 +89,11 @@ If you find Deformable ConvNets useful in your research, please consider citing:
 
 
 3. Python packages might missing: cython, opencv-python >= 3.2.0, easydict. If `pip` is set up on your system, those packages should be able to be fetched and installed by running
-	```
-	pip install Cython
-	pip install opencv-python==3.2.0.6
-	pip install easydict==1.6
-	```
+ ```
+ pip install Cython
+ pip install opencv-python==3.2.0.6
+ pip install easydict==1.6
+ ```
 4. For Windows users, Visual Studio 2015 is needed to compile cython module.
 
 
@@ -110,29 +112,29 @@ git clone https://github.com/msracver/Deformable-ConvNets.git
 
 3. Install MXNet:
 
-	3.1 Clone MXNet and checkout to [MXNet@(commit 62ecb60)](https://github.com/dmlc/mxnet/tree/62ecb60) by
-	```
-	git clone --recursive https://github.com/dmlc/mxnet.git
-	git checkout 62ecb60
-	git submodule update
-	```
-	3.2 Copy operators in `$(DCN_ROOT)/rfcn/operator_cxx` or `$(DCN_ROOT)/faster_rcnn/operator_cxx` to `$(YOUR_MXNET_FOLDER)/src/operator/contrib` by
-	```
-	cp -r $(DCN_ROOT)/rfcn/operator_cxx/* $(MXNET_ROOT)/src/operator/contrib/
-	```
-	3.3 Compile MXNet
-	```
-	cd ${MXNET_ROOT}
-	make -j $(nproc) USE_OPENCV=1 USE_BLAS=openblas USE_CUDA=1 USE_CUDA_PATH=/usr/local/cuda USE_CUDNN=1
-	```
-	3.4 Install the MXNet Python binding by
-	
-	***Note: If you will actively switch between different versions of MXNet, please follow 3.5 instead of 3.4***
-	```
-	cd python
-	sudo python setup.py install
-	```
-	3.5 For advanced users, you may put your Python packge into `./external/mxnet/$(YOUR_MXNET_PACKAGE)`, and modify `MXNET_VERSION` in `./experiments/rfcn/cfgs/*.yaml` to `$(YOUR_MXNET_PACKAGE)`. Thus you can switch among different versions of MXNet quickly.
+ 3.1 Clone MXNet and checkout to [MXNet@(commit 62ecb60)](https://github.com/dmlc/mxnet/tree/62ecb60) by
+ ```
+ git clone --recursive https://github.com/dmlc/mxnet.git
+ git checkout 62ecb60
+ git submodule update
+ ```
+ 3.2 Copy operators in `$(DCN_ROOT)/rfcn/operator_cxx` or `$(DCN_ROOT)/faster_rcnn/operator_cxx` to `$(YOUR_MXNET_FOLDER)/src/operator/contrib` by
+ ```
+ cp -r $(DCN_ROOT)/rfcn/operator_cxx/* $(MXNET_ROOT)/src/operator/contrib/
+ ```
+ 3.3 Compile MXNet
+ ```
+ cd ${MXNET_ROOT}
+ make -j $(nproc) USE_OPENCV=1 USE_BLAS=openblas USE_CUDA=1 USE_CUDA_PATH=/usr/local/cuda USE_CUDNN=1
+ ```
+ 3.4 Install the MXNet Python binding by
+
+ ***Note: If you will actively switch between different versions of MXNet, please follow 3.5 instead of 3.4***
+ ```
+ cd python
+ sudo python setup.py install
+ ```
+ 3.5 For advanced users, you may put your Python packge into `./external/mxnet/$(YOUR_MXNET_PACKAGE)`, and modify `MXNET_VERSION` in `./experiments/rfcn/cfgs/*.yaml` to `$(YOUR_MXNET_PACKAGE)`. Thus you can switch among different versions of MXNet quickly.
 
 4. For Deeplab, we use the argumented VOC 2012 dataset. The argumented annotations are provided by [SBD](http://home.bharathh.info/pubs/codes/SBD/download.html) dataset. For convenience, we provide the converted PNG annotations and the lists of train/val images, please download them from [OneDrive](https://1drv.ms/u/s!Am-5JzdW2XHzhqMRhVImMI1jRrsxDg).
 
@@ -142,38 +144,38 @@ We provide trained deformable convnet models, including the deformable R-FCN & F
 
 1. To use the demo with our pre-trained deformable models, please download manually from [OneDrive](https://1drv.ms/u/s!Am-5JzdW2XHzhqMSjehIcCgAhvEAHw), and put it under folder `model/`.
 
-	Make sure it looks like this:
-	```
-	./model/rfcn_dcn_coco-0000.params
-	./model/rfcn_coco-0000.params
-	./model/rcnn_dcn_coco-0000.params
-	./model/rcnn_coco-0000.params
-	./model/deeplab_dcn_cityscapes-0000.params
-	./model/deeplab_cityscapes-0000.params
-	./model/deform_conv-0000.params
-	./model/deform_psroi-0000.params
-	```
+ Make sure it looks like this:
+ ```
+ ./model/rfcn_dcn_coco-0000.params
+ ./model/rfcn_coco-0000.params
+ ./model/rcnn_dcn_coco-0000.params
+ ./model/rcnn_coco-0000.params
+ ./model/deeplab_dcn_cityscapes-0000.params
+ ./model/deeplab_cityscapes-0000.params
+ ./model/deform_conv-0000.params
+ ./model/deform_psroi-0000.params
+ ```
 2. To run the R-FCN demo, run
-	```
-	python ./rfcn/demo.py
-	```
-	By default it will run Deformable R-FCN and gives several prediction results, to run R-FCN, use
-	```
-	python ./rfcn/demo.py --rfcn_only
-	```
+ ```
+ python ./rfcn/demo.py
+ ```
+ By default it will run Deformable R-FCN and gives several prediction results, to run R-FCN, use
+ ```
+ python ./rfcn/demo.py --rfcn_only
+ ```
 3. To run the DeepLab demo, run
-	```
-	python ./deeplab/demo.py
-	```
-	By default it will run Deformable Deeplab and gives several prediction results, to run DeepLab, use
-	```
-	python ./deeplab/demo.py --deeplab_only
-	```
+ ```
+ python ./deeplab/demo.py
+ ```
+ By default it will run Deformable Deeplab and gives several prediction results, to run DeepLab, use
+ ```
+ python ./deeplab/demo.py --deeplab_only
+ ```
 4. To visualize the offset of deformable convolution and deformable psroipooling, run
-	```
-	python ./rfcn/deform_conv_demo.py
-	python ./rfcn/defrom_psroi_demo.py
-	```
+ ```
+ python ./rfcn/deform_conv_demo.py
+ python ./rfcn/defrom_psroi_demo.py
+ ```
 
 
 ## Preparation for Training & Testing
@@ -181,36 +183,36 @@ We provide trained deformable convnet models, including the deformable R-FCN & F
 For R-FCN/Faster R-CNN\:
 1. Please download COCO and VOC 2007+2012 datasets, and make sure it looks like this:
 
-	```
-	./data/coco/
-	./data/VOCdevkit/VOC2007/
-	./data/VOCdevkit/VOC2012/
-	```
+ ```
+ ./data/coco/
+ ./data/VOCdevkit/VOC2007/
+ ./data/VOCdevkit/VOC2012/
+ ```
 
 2. Please download ImageNet-pretrained ResNet-v1-101 model manually from [OneDrive](https://1drv.ms/u/s!Am-5JzdW2XHzhqMEtxf1Ciym8uZ8sg), and put it under folder `./model`. Make sure it looks like this:
-	```
-	./model/pretrained_model/resnet_v1_101-0000.params
-	```
+ ```
+ ./model/pretrained_model/resnet_v1_101-0000.params
+ ```
 
 For DeepLab\:
 1. Please download Cityscapes and VOC 2012 datasets and make sure it looks like this:
 
-	```
-	./data/cityscapes/
-	./data/VOCdevkit/VOC2012/
-	```
+ ```
+ ./data/cityscapes/
+ ./data/VOCdevkit/VOC2012/
+ ```
 2. Please download argumented VOC 2012 annotations/image lists, and put the argumented annotations and the argumented train/val lists into:
 
-	```
-	./data/VOCdevkit/VOC2012/SegmentationClass/
-	./data/VOCdevkit/VOC2012/ImageSets/Main/
-	```
-   , Respectively.
-   
-2. Please download ImageNet-pretrained ResNet-v1-101 model manually from [OneDrive](https://1drv.ms/u/s!Am-5JzdW2XHzhqMEtxf1Ciym8uZ8sg), and put it under folder `./model`. Make sure it looks like this:
-	```
-	./model/pretrained_model/resnet_v1_101-0000.params
-	```
+ ```
+ ./data/VOCdevkit/VOC2012/SegmentationClass/
+ ./data/VOCdevkit/VOC2012/ImageSets/Main/
+ ```
+  , Respectively.
+
+3. Please download ImageNet-pretrained ResNet-v1-101 model manually from [OneDrive](https://1drv.ms/u/s!Am-5JzdW2XHzhqMEtxf1Ciym8uZ8sg), and put it under folder `./model`. Make sure it looks like this:
+ ```
+ ./model/pretrained_model/resnet_v1_101-0000.params
+ ```
 ## Usage
 
 1. All of our experiment settings (GPU #, dataset, etc.) are kept in yaml config files at folder `./experiments/rfcn/cfgs`, `./experiments/faster_rcnn/cfgs` and `./experiments/deeplab/cfgs/`.
@@ -236,10 +238,10 @@ Code has been tested under:
 Q: It says `AttributeError: 'module' object has no attribute 'DeformableConvolution'`.
 
 A: This is because either
- - you forget to copy the operators to your MXNet folder
- - or you copy to the wrong path
- - or you forget to re-compile
- - or you install the wrong MXNet
+-  you forget to copy the operators to your MXNet folder
+-  or you copy to the wrong path
+-  or you forget to re-compile
+-  or you install the wrong MXNet
 
     Please print `mxnet.__path__` to make sure you use correct MXNet
 

@@ -122,7 +122,7 @@ class resnext101_32x4d_rfcn_dcn(Symbol):
 
             eltwise = bn2 + shortcut
             return mx.sym.Activation(data=eltwise, act_type='relu', name=name + '_relu')
-    def get_renext_101_conv4(self,data,num_stage = 3,bottle_neck = True):
+    def get_resnext_101_conv4(self,data,num_stage = 3,bottle_neck = True):
         data = mx.sym.BatchNorm(data=data, fix_gamma=True, eps=2e-5, momentum=self.bn_mom, use_global_stats=self.bn_global_,
                                 name='bn_data')
         body = mx.sym.Convolution(data=data, num_filter=self.filter_list[0], kernel=(7, 7), stride=(2, 2), pad=(3, 3),
@@ -142,7 +142,7 @@ class resnext101_32x4d_rfcn_dcn(Symbol):
                                      bottle_neck=bottle_neck, workspace=self.workspace, bn_global=bn_global_,dilate=False)
         return body
 
-    def get_renext_101_conv5(self,conv_fea):
+    def get_resnext_101_conv5(self,conv_fea):
         i = 3
         dilate = True
         body = self.residual_unit(conv_fea, self.filter_list[i + 1], (1 if i == 0 else 2, 1 if i == 0 else 2), False, dilate=dilate,
@@ -150,7 +150,7 @@ class resnext101_32x4d_rfcn_dcn(Symbol):
                                   bn_global=self.bn_global_)
         for j in range(self.units[i] - 1):
             body = self.residual_unit(body, self.filter_list[i + 1], (1, 1), True, name='stage%d_unit%d' % (i + 1, j + 2),
-                                      bottle_neck=True, workspace=self.workspace, bn_global=self.bn_global_,dilate=True)
+                                      bottle_neck=True, workspace=self.workspace, bn_global=self.bn_global_,dilate=True,deform_conv = True)
         return body
 
 
@@ -184,9 +184,9 @@ class resnext101_32x4d_rfcn_dcn(Symbol):
             im_info = mx.sym.Variable(name="im_info")
 
         # shared convolutional layers
-        conv_feat = self.get_renext_101_conv4(data)
+        conv_feat = self.get_resnext_101_conv4(data)
         # res5
-        relu1 = self.get_renext_101_conv5(conv_fea=conv_feat)
+        relu1 = self.get_resnext_101_conv5(conv_fea=conv_feat)
 
         rpn_cls_score, rpn_bbox_pred = self.get_rpn(conv_feat, num_anchors)
 
@@ -328,7 +328,7 @@ class resnext101_32x4d_rfcn_dcn(Symbol):
             im_info = mx.sym.Variable(name="im_info")
 
         # shared convolutional layers
-        conv_feat = self.get_resnet_v1_conv4(data)
+        conv_feat = self.get_resnext_101_conv4(data)
         rpn_cls_score, rpn_bbox_pred = self.get_rpn(conv_feat, num_anchors)
         if is_train:
             # prepare rpn data
@@ -394,8 +394,8 @@ class resnext101_32x4d_rfcn_dcn(Symbol):
             rois = mx.symbol.Reshape(data=rois, shape=(-1, 5), name='rois_reshape')
 
         # shared convolutional layers
-        conv_feat = self.get_resnet_v1_conv4(data)
-        relu1 = self.get_resnet_v1_conv5(conv_feat)
+        conv_feat = self.get_resnext_101_conv4(data)
+        relu1 = self.get_resnext_101_conv5(conv_feat)
 
         # conv_new_1
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=1024, name="conv_new_1", lr_mult=3.0)

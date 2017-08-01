@@ -4,7 +4,7 @@ from utils.symbol import Symbol
 from operator_py.proposal import *
 from operator_py.proposal_target import *
 from operator_py.box_annotator_ohem import *
-class resnext_101_rcnn_dcn(Symbol):
+class resnext101_32x4d_rcnn_dcn(Symbol):
     def __init__(self):
         """
         Use __init__ to define parameter network needs
@@ -122,7 +122,7 @@ class resnext_101_rcnn_dcn(Symbol):
         rpn_bbox_pred = mx.sym.Convolution(
             data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors, name="rpn_bbox_pred")
         return rpn_cls_score, rpn_bbox_pred
-    def get_renext_101_conv4(self,data,num_stage = 3,bottle_neck = True):
+    def get_resnext101_32x4d_conv4(self,data,num_stage = 3,bottle_neck = True):
         data = mx.sym.BatchNorm(data=data, fix_gamma=True, eps=2e-5, momentum=self.bn_mom, use_global_stats=self.bn_global_,
                                 name='bn_data')
         body = mx.sym.Convolution(data=data, num_filter=self.filter_list[0], kernel=(7, 7), stride=(2, 2), pad=(3, 3),
@@ -141,7 +141,7 @@ class resnext_101_rcnn_dcn(Symbol):
                 body = self.residual_unit(data = body, num_filter=self.filter_list[i + 1], stride = (1, 1), dim_match=True, name='stage%d_unit%d' % (i + 1, j + 2),
                                      bottle_neck=bottle_neck, workspace=self.workspace, bn_global=bn_global_,dilate=False)
         return body
-    def get_renext_101_conv5(self,conv_fea):
+    def get_resnext101_32x4d_conv5(self,conv_fea):
         i = 3
         dilate = True
         body = self.residual_unit(conv_fea, self.filter_list[i + 1], (1 if i == 0 else 2, 1 if i == 0 else 2), False, dilate=dilate,
@@ -172,9 +172,9 @@ class resnext_101_rcnn_dcn(Symbol):
             im_info = mx.sym.Variable(name="im_info")
 
         # shared convolutional layers
-        conv_feat = self.get_renext_101_conv4(data)
+        conv_feat = self.get_resnext101_32x4d_conv4(data)
         # res5
-        relu1 = self.get_renext_101_conv5(conv_fea=conv_feat)
+        relu1 = self.get_resnext101_32x4d_conv5(conv_fea=conv_feat)
 
         rpn_cls_score, rpn_bbox_pred = self.get_rpn(conv_feat, num_anchors)
 
@@ -245,12 +245,17 @@ class resnext_101_rcnn_dcn(Symbol):
 
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=256, name="conv_new_1")
         conv_new_1_relu = mx.sym.Activation(data=conv_new_1, act_type='relu', name='conv_new_1_relu')
+        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1, pooled_size=7,
+                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=0.0625)
+        offset = mx.sym.FullyConnected(name='offset', data=offset_t, num_hidden=7 * 7 * 2, lr_mult=0.01)
+        offset_reshape = mx.sym.Reshape(data=offset, shape=(-1, 2, 7, 7), name="offset_reshape")
 
-        roi_pool = mx.symbol.ROIPooling(
-            name='roi_pool', data=conv_new_1_relu, rois=rois, pooled_size=(7, 7), spatial_scale=0.0625)
+        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu, rois=rois,
+                                                                    trans=offset_reshape, group_size=1, pooled_size=7, sample_per_part=4,
+                                                                    no_trans=False, part_size=7, output_dim=256, spatial_scale=0.0625, trans_std=0.1)
 
         # 2 fc
-        fc_new_1 = mx.symbol.FullyConnected(name='fc_new_1', data=roi_pool, num_hidden=1024)
+        fc_new_1 = mx.symbol.FullyConnected(name='fc_new_1', data=deformable_roi_pool, num_hidden=1024)
         fc_new_1_relu = mx.sym.Activation(data=fc_new_1, act_type='relu', name='fc_new_1_relu')
 
         fc_new_2 = mx.symbol.FullyConnected(name='fc_new_2', data=fc_new_1_relu, num_hidden=1024)
@@ -305,7 +310,10 @@ class resnext_101_rcnn_dcn(Symbol):
         arg_params['stage4_unit3_conv2_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit3_conv2_offset_weight'])
         arg_params['stage4_unit3_conv2_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit3_conv2_offset_bias'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
+        arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
         arg_params['conv_new_1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['conv_new_1_bias'])
+        arg_params['offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_weight'])
+        arg_params['offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_bias'])
         arg_params['fc_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_1_weight'])
         arg_params['fc_new_1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_1_bias'])
         arg_params['fc_new_2_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_2_weight'])
