@@ -151,7 +151,7 @@ class resnext101_32x4d_rfcn(Symbol):
                                   bn_global=self.bn_global_)
         for j in range(self.units[i] - 1):
             body = self.residual_unit(body, self.filter_list[i + 1], (1, 1), True, name='stage%d_unit%d' % (i + 1, j + 2),
-                                      bottle_neck=True, workspace=self.workspace, bn_global=self.bn_global_,dilate=True)
+                                      bottle_neck=True, workspace=self.workspace, bn_global=self.bn_global_,dilate=dilate)
         return body
 
     def get_rpn(self, conv_feat, num_anchors):
