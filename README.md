@@ -57,6 +57,7 @@ If you find Deformable ConvNets useful in your research, please consider citing:
 | Deformable R-FCN, ResNet-v1-101          | VOC 07+12 trainval | VOC 07 test  | 82.3    | 67.8    | 0.19s         |
 | ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ------------- |
 | R-FCN, ResNext101-32x4d                  | VOC 07+12 trainval |VOC 07 test   | 78.99   | 63.39   | 0.14s(1080Ti) |
+| Deformable R-FCN, ResNext101-32x4d w/o ohem| VOC 07+12 trainval |VOC 07 test   | 81.67   | 67.83 | 0.16s(1080Ti) |
 | Faster R-CNN (2fc), ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57   | 65.37   | 0.13s(1080Ti) |
 | Deformable Faster R-CNN (2fc),ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37   | 69.77   | 0.17s(1080Ti) |
 
