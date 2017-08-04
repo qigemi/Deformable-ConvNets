@@ -11,7 +11,8 @@ default:
   frequent: 100
   kvstore: device
 network:
-  pretrained: "./model/pretrained_model/resnext-101"
+  #pretrained: "./model/pretrained_model/resnext-101"
+  pretrained: "./output/rfcn_dcn/voc/resnext101_32x4d_voc0712_rfcn_dcn_end2end_ohem/2007_trainval_2012trainval/resnext101_32x4d_rfcn_dcn_voc"
   pretrained_epoch: 0
   PIXEL_MEANS:
   - 0
@@ -61,11 +62,11 @@ TRAIN:
   warmup_lr: 0.00005
   # typically we will use 4000 warmup step for single GPU on VOC
   warmup_step: 1000
-  begin_epoch: 0
+  begin_epoch: 6
   end_epoch: 10
   model_prefix: 'resnext101_32x4d_rfcn_dcn_voc'
   # whether resume training
-  RESUME: false
+  RESUME: true
   # whether flip image
   FLIP: true
   # whether shuffle image
