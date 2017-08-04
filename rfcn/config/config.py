@@ -157,6 +157,7 @@ config.TEST.PROPOSAL_MIN_SIZE = config.network.RPN_FEAT_STRIDE
 
 # RCNN nms
 config.TEST.NMS = 0.3
+config.TEST.SNMS = False
 
 config.TEST.max_per_image = 300
 

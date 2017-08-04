@@ -2,7 +2,7 @@
 MXNET_VERSION: "mxnet"
 output_path: "./output/rcnn/voc"
 symbol: resnext101_32x4d_rcnn
-gpus: '0,1'
+gpus: '2,3'
 CLASS_AGNOSTIC: false
 SCALES:
 - 600

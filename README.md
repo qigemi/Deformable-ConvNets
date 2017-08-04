@@ -50,17 +50,18 @@ If you find Deformable ConvNets useful in your research, please consider citing:
 ```
 
 ## Main Results
+note: nms/soft-nms
 
 |                                          | training data      | testing data | mAP@0.5 | mAP@0.7 | time          |
 | ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ------------- |
-| R-FCN, ResNet-v1-101                     | VOC 07+12 trainval | VOC 07 test  | 79.6    | 63.1    | 0.16s         |
-| Deformable R-FCN, ResNet-v1-101          | VOC 07+12 trainval | VOC 07 test  | 82.3    | 67.8    | 0.19s         |
+| R-FCN, ResNet-v1-101                     | VOC 07+12 trainval | VOC 07 test  | 79.6/-    | 63.1/-    | 0.16s         |
+| Deformable R-FCN, ResNet-v1-101          | VOC 07+12 trainval | VOC 07 test  | 82.3/-    | 67.8/-    | 0.19s         |
 | ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ------------- |
-| R-FCN, ResNext101-32x4d                  | VOC 07+12 trainval |VOC 07 test   | 78.99   | 63.39   | 0.14s(1080Ti) |
-| Deformable R-FCN, ResNext101-32x4d w/o ohem| VOC 07+12 trainval |VOC 07 test   | 81.67   | 67.83 | 0.16s(1080Ti) |
-| Deformable R-FCN, ResNext101-32x4d with ohem| VOC 07+12 trainval |VOC 07 test   | 82.10   | 67.90 | 0.16s(1080Ti) |
-| Faster R-CNN (2fc), ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57   | 65.37   | 0.13s(1080Ti) |
-| Deformable Faster R-CNN (2fc),ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37   | 69.77   | 0.17s(1080Ti) |
+| R-FCN, ResNext101-32x4d                  | VOC 07+12 trainval |VOC 07 test   | 78.99/78.91   | 63.39/66.10   | 0.14s(1080Ti) |
+| Deformable R-FCN, ResNext101-32x4d w/o ohem| VOC 07+12 trainval |VOC 07 test   | 81.67/81.69   | 67.83/70.11 | 0.16s(1080Ti) |
+| Deformable R-FCN, ResNext101-32x4d with ohem| VOC 07+12 trainval |VOC 07 test   | 82.10/81.47   | 67.90/70.19 | 0.16s(1080Ti) |
+| Faster R-CNN (2fc), ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57/80.24  | 65.37/67.90   | 0.13s(1080Ti) |
+| Deformable Faster R-CNN (2fc),ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37/82.05   | 69.77/71.40   | 0.17s(1080Ti) |
 
 
 |                                          | <sub>training data</sub> | <sub>testing data</sub>  | <sub>mAP</sub> | <sub>mAP@0.5</sub> | <sub>mAP@0.75</sub> | <sub>mAP@S</sub> | <sub>mAP@M</sub> | <sub>mAP@L</sub> |
