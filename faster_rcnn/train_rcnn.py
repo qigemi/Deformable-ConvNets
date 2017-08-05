@@ -16,6 +16,7 @@ import pprint
 import os
 import sys
 from config.config import config, update_config
+os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN network')

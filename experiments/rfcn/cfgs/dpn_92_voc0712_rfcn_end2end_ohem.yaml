@@ -14,11 +14,12 @@ network:
   pretrained: "./model/pretrained_model/dpn92"
   pretrained_epoch: 0
   PIXEL_MEANS:
-  - 103.06
-  - 115.90
-  - 123.15
+  - 104
+  - 117
+  - 124
+  PIXEL_STD: 0.0167
   IMAGE_STRIDE: 0
-  RCNN_FEAT_STRIDE: 32
+  RCNN_FEAT_STRIDE: 16
   RPN_FEAT_STRIDE: 16
   FIXED_PARAMS:
   - conv1_x
@@ -26,10 +27,12 @@ network:
   - gamma
   - beta
   FIXED_PARAMS_SHARED:
-  - conv1_x
-  - conv2_x
-  - conv3_x
-  - conv4_x
+  - conv0
+  - bn_data
+  - bn0
+  - stage1
+  - stage2
+  - stage3
   - gamma
   - beta
   ANCHOR_RATIOS:
@@ -50,15 +53,15 @@ dataset:
   test_image_set: 2007_test
   proposal: rpn
 TRAIN:
-  lr: 0.0001
-  lr_step: '4.83'
+  lr: 0.0005
+  lr_step: '7'
   warmup: true
   warmup_lr: 0.00005
   # typically we will use 4000 warmup step for single GPU on VOC
   warmup_step: 1000
   begin_epoch: 0
-  end_epoch: 7
-  model_prefix: 'rfcn_dpn92'
+  end_epoch: 10
+  model_prefix: 'dpn_92_rfcn_voc'
   # whether resume training
   RESUME: false
   # whether flip image
@@ -142,5 +145,4 @@ TEST:
   PROPOSAL_MIN_SIZE: 0
   # RCNN nms
   NMS: 0.3
-  test_epoch: 7
-
+  test_epoch: 10

@@ -15,6 +15,7 @@ import sys
 import time
 import logging
 from config.config import config, update_config
+os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test a R-FCN network')
