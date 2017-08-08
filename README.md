@@ -56,19 +56,22 @@ note: nms/soft-nms
 | ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ------------- |
 | R-FCN, ResNet-v1-101                     | VOC 07+12 trainval | VOC 07 test  | 79.6/-    | 63.1/-    | 0.16s         |
 | Deformable R-FCN, ResNet-v1-101          | VOC 07+12 trainval | VOC 07 test  | 82.3/-    | 67.8/-    | 0.19s         |
-| ---------------------------------------- | ------------------ | ------------ | ------- | ------- | ------------- |
-| R-FCN, ResNext101-32x4d                  | VOC 07+12 trainval |VOC 07 test   | 78.99/79.67   | 63.39/65.93   | 0.14s(1080Ti) |
-| Deformable R-FCN, ResNext101-32x4d w/o ohem| VOC 07+12 trainval |VOC 07 test   | 81.67/82.16   | 67.83/70.66 | 0.16s(1080Ti) |
-| Deformable R-FCN, ResNext101-32x4d with ohem| VOC 07+12 trainval |VOC 07 test   | 82.10/82.31   | 67.90/70.48 | 0.16s(1080Ti) |
-| Faster R-CNN (2fc), ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57/81.07  | 65.37/67.94   | 0.13s(1080Ti) |
+
+|                                                | training data      | testing data | mAP@0.5 | mAP@0.7 | test time     |  train time(iter/s) |memory train/test(MB)|
+| ----------------------------------------       | ------------------ | ------------ | ------- | ------- | ------------- | -------------|---------------------|
+| R-FCN, ResNext101-32x4d                        | VOC 07+12 trainval | VOC 07 test  | 78.99/79.67   | 63.39/65.93   | 0.14s(1080Ti) |
+| Deformable R-FCN, ResNext101-32x4d w/o ohem    | VOC 07+12 trainval | VOC 07 test  | 81.67/82.16   | 67.83/70.66   | 0.16s(1080Ti) |
+| Deformable R-FCN, ResNext101-32x4d with ohem   | VOC 07+12 trainval | VOC 07 test  | 82.10/82.31   | 67.90/70.48   |  0.16s(1080Ti)|
+| Faster R-CNN (2fc), ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57/81.07   | 65.37/67.94   | 0.13s(1080Ti) |
 | Deformable Faster R-CNN (2fc),ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37/82.65   | 69.77/72.08   | 0.17s(1080Ti) |
+| Deformable Faster R-CNN (2fc),air101           | VOC 07+12 trainval | VOC 07 test  |    - /79.38   | -/64.88       | 0.18s(1080Ti) |  3 |3920/825|
 
 
 |                                          | <sub>training data</sub> | <sub>testing data</sub>  | <sub>mAP</sub> | <sub>mAP@0.5</sub> | <sub>mAP@0.75</sub> | <sub>mAP@S</sub> | <sub>mAP@M</sub> | <sub>mAP@L</sub> |
 | ---------------------------------------- | ------------------------ | ------------------------ | -------------- | ------------------ | ------------------- | ---------------- | ---------------- | ---------------- |
 | <sub>R-FCN, ResNet-v1-101 </sub>         | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 32.1           | 54.3               | 33.8                | 12.8             | 34.9             | 46.1             |
-| <sub>Deformable R-FCN, ResNet-v1-101</sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 35.7           | 56.8               | 38.3                | 15.2             | 38.8             | 51.5             |
-| <sub>Faster R-CNN (2fc), ResNet-v1-101 </sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 30.3           | 52.1               | 31.4                | 9.9              | 32.2             | 47.4             |
+| <sub>Deformable R-FCN, ResNet-v1-101</sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 35.7           | 56.8             | 38.3                | 15.2             | 38.8             | 51.5             |
+| <sub>Faster R-CNN (2fc), ResNet-v1-101 </sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 30.3        | 52.1          | 31.4                | 9.9              | 32.2             | 47.4             |
 | <sub>Deformable Faster R-CNN (2fc), </br>ResNet-v1-101</sub> | <sub>coco trainval</sub> | <sub>coco test-dev</sub> | 35.0           | 55.0               | 38.3                | 14.3             | 37.7             | 52.0             |
 
 
