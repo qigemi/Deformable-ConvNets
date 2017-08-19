@@ -76,6 +76,20 @@ def get_segmentation_image(segdb, config):
         processed_seg_cls_gt.append(seg_cls_gt_tensor)
 
     return processed_ims, processed_seg_cls_gt, processed_segdb
+def pyramid_reisze(im,target_size,max_size,stride=0,interpolation=cv2.INTER_LINEAR):
+    """
+    only resize input image to target size and return scale
+    :param im: BGR image input by opencv
+    :param target_size: one dimensional size (the short side)
+    :param max_size: one dimensional max size (the long side)
+    :param stride: if given, pad the image to designated stride
+    :param interpolation: if given, using given interpolation method to resize image
+    :return:
+    """
+    im_shape = im.shape
+    im_size_min = np.min(im_shape[0:2])
+    im_size_max = np.max(im_shape[0:2])
+    im_scale = float(target_size) / float(im_size_min)
 
 def resize(im, target_size, max_size, stride=0, interpolation = cv2.INTER_LINEAR):
     """

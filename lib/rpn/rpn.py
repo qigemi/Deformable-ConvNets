@@ -63,8 +63,8 @@ def get_rpn_batch(roidb, cfg):
     return data, label
 
 
-def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
-                  scales=(8, 16, 32), ratios=(0.5, 1, 2), allowed_border=0):
+def assign_anchor(feat_shape, gt_boxes, im_info, cfg,class_num = 21, feat_stride=16,
+                  scales=(8, 16, 32), ratios=(0.5, 1, 2), allowed_border=0,multi_label = False):
     """
     assign ground truth boxes to anchor positions
     :param feat_shape: infer output shape
@@ -193,6 +193,11 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
 
     bbox_weights = np.zeros((len(inds_inside), 4), dtype=np.float32)
     bbox_weights[labels == 1, :] = np.array(cfg.TRAIN.RPN_BBOX_WEIGHTS)
+    #multi label
+    if multi_label:
+        multi_label_  = np.zeros(class_num,dtype=np.float32)
+        multi_label_[gt_boxes[:,4].astype(np.int)] = 1
+        multi_label_ = multi_label_.reshape((1,multi_label_.shape[0]))
 
     if DEBUG:
         _sums = bbox_targets[labels == 1, :].sum(axis=0)
@@ -226,4 +231,6 @@ def assign_anchor(feat_shape, gt_boxes, im_info, cfg, feat_stride=16,
     label = {'label': labels,
              'bbox_target': bbox_targets,
              'bbox_weight': bbox_weights}
+    if multi_label:
+        label['multi_label'] = multi_label_
     return label

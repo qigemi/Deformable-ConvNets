@@ -4,9 +4,89 @@ from utils.symbol import Symbol
 from operator_py.proposal import *
 from operator_py.proposal_target import *
 from operator_py.box_annotator_ohem import *
-from operator_py.roi_global_context import *
+import numpy as np
+class CrossEntropyLoss(mx.operator.CustomOp):
+    """An output layer that calculates gradient for cross-entropy loss
+    y * log(p) + (1-y) * log(p)
+    for label "y" and prediction "p".
+    However, the output of this layer is the original prediction -- same as
+    the "data" input, making it useful for tasks like "predict".
+    If you actually want to use the calculated loss, see CrossEntropyLoss op.
+    This is useful for multi-label prediction where each possible output
+    label is considered independently.
+    Cross-entropy loss provides a very large penalty for guessing
+    the wrong answer (0 or 1) confidently.
+    The gradient calculation is optimized for y only being 0 or 1.
+    """
 
-class resnext101_32x4d_rcnn_dcn_context(Symbol):
+    eps = 1e-6 # Avoid -inf when taking log(0)
+    eps1 = 1. + eps
+    eps_1 = 1. - eps
+
+    def forward(self, is_train, req, in_data, out_data, aux):
+        # Shapes:
+        #  b = minibatch size
+        #  d = number of dimensions
+        actually_calculate_loss = True
+        if actually_calculate_loss:
+            p = in_data[0].asnumpy()  # shape=(b,d)
+            y = in_data[1].asnumpy()
+            out = y * np.log(p+self.eps) + (1.-y) * np.log((self.eps1) - p)
+            out = -out
+            self.assign(out_data[0], req[0], mx.nd.array(out))
+        else:
+            # Just copy the predictions forward
+            self.assign(out_data[0], req[0], in_data[0])
+
+
+    def backward(self, req, out_grad, in_data, out_data, in_grad, aux):
+        #self.approx_backward(req, out_grad, in_data, out_data, in_grad, aux)
+        self.exact_backward(req, out_grad, in_data, out_data, in_grad, aux)
+
+    def approx_backward(self, req, out_grad, in_data, out_data, in_grad, aux):
+        """Correct grad = (y-p)/(p-p^2)
+        But if y is just 1 or 0, then this simplifies to
+        grad = 1/(p-1+y)
+        which is more numerically stable
+        """
+        p = in_data[0].asnumpy()  # shape=(b,d)
+        y = in_data[1].asnumpy()
+        d_new = p - self.eps_1 + y
+        d_new[d_new==0] = self.eps_1
+        grad = -1. / d_new
+        self.assign(in_grad[0], req[0], mx.nd.array(grad))
+
+
+    def exact_backward(self, req, out_grad, in_data, out_data, in_grad, aux):
+        """grad = (y-p)/(p-p^2)
+        """
+        p = in_data[0].asnumpy()  # shape=(b,d)
+        y = in_data[1].asnumpy()  # seems right
+        grad = (p - y) / ((p+self.eps) * (self.eps1 - p))
+        self.assign(in_grad[0], req[0], mx.nd.array(grad))
+
+
+@mx.operator.register("CrossEntropyLoss")
+class CrossEntropyProp(mx.operator.CustomOpProp):
+    def __init__(self):
+        super(CrossEntropyProp, self).__init__(need_top_grad=False)
+
+    def list_arguments(self):
+        return ['data','label']
+
+    def list_outputs(self):
+        return ['preds']
+
+    def create_operator(self, ctx, shapes, dtypes):
+        return CrossEntropyLoss()
+
+    def infer_shape(self, in_shape):
+        if in_shape[0] != in_shape[1]:
+            raise ValueError("Input shapes differ. data:%s. label:%s. must be same"
+                    % (str(in_shape[0]),str(in_shape[1])))
+        output_shape = in_shape[0]
+        return in_shape, [output_shape], []
+class resnext101_32x4d_rcnn_dcn_multilabel(Symbol):
     def __init__(self):
         """
         Use __init__ to define parameter network needs
@@ -169,18 +249,28 @@ class resnext101_32x4d_rcnn_dcn_context(Symbol):
             rpn_label = mx.sym.Variable(name='label')
             rpn_bbox_target = mx.sym.Variable(name='bbox_target')
             rpn_bbox_weight = mx.sym.Variable(name='bbox_weight')
+            multi_label = mx.sym.Variable(name='multi_label')
         else:
             data = mx.sym.Variable(name="data")
             im_info = mx.sym.Variable(name="im_info")
 
         # shared convolutional layers
         conv_feat = self.get_resnext101_32x4d_conv4(data)
+        #rpn_fea = mx.sym.Convolution(data=conv_feat, kernel=(1, 1), num_filter=num_classes, name="rpn_fea")
+        #rpn_relu = mx.sym.Activation(data=rpn_fea, act_type='relu', name='rpn_relu')
         # res5
         relu1 = self.get_resnext101_32x4d_conv5(conv_fea=conv_feat)
-
         rpn_cls_score, rpn_bbox_pred = self.get_rpn(conv_feat, num_anchors)
 
         if is_train:
+            #muli_label
+            multi_label_weight = 0.01
+            rpn_pool = mx.symbol.Pooling(name='rpn_pool', data=conv_feat, global_pool=True,kernel = (7,7), pool_type='avg')
+            rpn_flat = mx.sym.Flatten(data=rpn_pool)
+            rpn_fc = mx.symbol.FullyConnected(name='rpn_fc', data=rpn_flat, num_hidden=num_classes)
+            rpn_sig = mx.sym.Activation(data=rpn_fc, name='rpn_sig',act_type  = 'sigmoid')
+            multi_label_loss_ = multi_label_weight*mx.symbol.Custom(data=rpn_sig,label = multi_label, name='multi_label_loss_', op_type='CrossEntropyLoss')
+            multi_label_loss = mx.sym.MakeLoss(data=multi_label_loss_,name='multi_label_loss',grad_scale = 1)
             # prepare rpn data
             rpn_cls_score_reshape = mx.sym.Reshape(
                 data=rpn_cls_score, shape=(0, 2, -1, 0), name="rpn_cls_score_reshape")
@@ -256,27 +346,16 @@ class resnext101_32x4d_rcnn_dcn_context(Symbol):
         deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu, rois=rois,
                                                                     trans=offset_reshape, group_size=1, pooled_size=7, sample_per_part=4,
                                                                     no_trans=False, part_size=7, output_dim=256, spatial_scale=0.0625, trans_std=0.1)
-        expanded_roi = mx.sym.Custom(
-            op_type = 'roi_global_context',im_info = im_info,rois = rois
-        )
-        context_roi_pool = mx.symbol.ROIPooling(
-            name='origin_roi_pool', data=conv_new_1_relu, rois=expanded_roi, pooled_size=(7, 7), spatial_scale=0.0625)
 
-        # 2 fc dcn
+        # 2 fc
         fc_new_1 = mx.symbol.FullyConnected(name='fc_new_1', data=deformable_roi_pool, num_hidden=1024)
         fc_new_1_relu = mx.sym.Activation(data=fc_new_1, act_type='relu', name='fc_new_1_relu')
 
         fc_new_2 = mx.symbol.FullyConnected(name='fc_new_2', data=fc_new_1_relu, num_hidden=1024)
         fc_new_2_relu = mx.sym.Activation(data=fc_new_2, act_type='relu', name='fc_new_2_relu')
-        # 2fc context
-        fc_new_3 = mx.symbol.FullyConnected(name='fc_new_3', data=context_roi_pool, num_hidden=1024)
-        fc_new_3_relu = mx.sym.Activation(data=fc_new_3, act_type='relu', name='fc_new_3_relu')
 
-        fc_new_4 = mx.symbol.FullyConnected(name='fc_new_4', data=fc_new_3_relu, num_hidden=1024)
-        fc_new_4_relu = mx.sym.Activation(data=fc_new_4, act_type='relu', name='fc_new_4_relu')
-        fc_cls_concat = mx.sym.Concat(fc_new_4_relu,fc_new_2_relu,name = 'fc_cls_concat')
         # cls_score/bbox_pred
-        cls_score = mx.symbol.FullyConnected(name='cls_score', data=fc_cls_concat, num_hidden=num_classes)
+        cls_score = mx.symbol.FullyConnected(name='cls_score', data=fc_new_2_relu, num_hidden=num_classes)
         bbox_pred = mx.symbol.FullyConnected(name='bbox_pred', data=fc_new_2_relu, num_hidden=num_reg_classes * 4)
 
         if is_train:
@@ -306,7 +385,7 @@ class resnext101_32x4d_rcnn_dcn_context(Symbol):
                                       name='cls_prob_reshape')
             bbox_loss = mx.sym.Reshape(data=bbox_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1, 4 * num_reg_classes),
                                        name='bbox_loss_reshape')
-            group = mx.sym.Group([rpn_cls_prob, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label)])
+            group = mx.sym.Group([rpn_cls_prob, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label),multi_label_loss,mx.sym.BlockGrad(rpn_sig)])
         else:
             cls_prob = mx.sym.SoftmaxActivation(name='cls_prob', data=cls_score)
             cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes),
@@ -324,18 +403,17 @@ class resnext101_32x4d_rcnn_dcn_context(Symbol):
         arg_params['stage4_unit3_conv2_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit3_conv2_offset_weight'])
         arg_params['stage4_unit3_conv2_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit3_conv2_offset_bias'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
-        arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
         arg_params['conv_new_1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['conv_new_1_bias'])
+        #arg_params['rpn_fea_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['rpn_fea_weight'])
+        #arg_params['rpn_fea_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['rpn_fea_bias'])
+        arg_params['rpn_fc_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['rpn_fc_weight'])
+        arg_params['rpn_fc_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['rpn_fc_bias'])
         arg_params['offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_weight'])
         arg_params['offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_bias'])
         arg_params['fc_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_1_weight'])
         arg_params['fc_new_1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_1_bias'])
         arg_params['fc_new_2_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_2_weight'])
         arg_params['fc_new_2_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_2_bias'])
-        arg_params['fc_new_3_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_3_weight'])
-        arg_params['fc_new_3_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_3_bias'])
-        arg_params['fc_new_4_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_4_weight'])
-        arg_params['fc_new_4_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_4_bias'])
         arg_params['cls_score_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['cls_score_weight'])
         arg_params['cls_score_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['cls_score_bias'])
         arg_params['bbox_pred_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['bbox_pred_weight'])

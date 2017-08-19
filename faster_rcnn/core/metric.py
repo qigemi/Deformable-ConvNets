@@ -8,8 +8,10 @@
 
 import mxnet as mx
 import numpy as np
+from sklearn.metrics import fbeta_score
 
-
+def f2_score(y_true,y_pred):
+    return fbeta_score(y_true,y_pred,beta=2,average='samples')
 def get_rpn_names():
     pred = ['rpn_cls_prob', 'rpn_bbox_loss']
     label = ['rpn_label', 'rpn_bbox_target', 'rpn_bbox_weight']
@@ -26,6 +28,10 @@ def get_rcnn_names(cfg):
         pred = rpn_pred + pred
         label = rpn_label
     return pred, label
+def get_multi_label_names():
+    pred = ['multi_label_loss_','rpn_sig']
+    label = ['multi_label']
+    return pred,label
 
 
 class RPNAccMetric(mx.metric.EvalMetric):
@@ -174,3 +180,25 @@ class RCNNL1LossMetric(mx.metric.EvalMetric):
 
         self.sum_metric += np.sum(bbox_loss)
         self.num_inst += num_inst
+
+class MultiLabelLossMetric(mx.metric.EvalMetric):
+    def __init__(self):
+        super(MultiLabelLossMetric,self).__init__('MultiLabelLoss')
+        self.pred,self.label = get_multi_label_names()
+    def update(self,labels,preds):
+        multi_label_loss = preds[-2].asnumpy()
+        multi_label_loss = multi_label_loss/multi_label_loss.shape[1]
+        self.num_inst += labels[-1].asnumpy().shape[0]
+        self.sum_metric += np.sum(multi_label_loss)
+def ml_acc(label, pred, label_width=21):
+    return float((label == np.round(pred)).sum()) / label_width / pred.shape[0]
+class MultiLabelACCMetric(mx.metric.EvalMetric):
+    def __init__(self):
+        super(MultiLabelACCMetric,self).__init__('MultiLabelACC')
+    def update(self,labels,preds):
+        t  = 0.5
+        y_pred = preds[-1].asnumpy()
+        y_true = labels[-1].asnumpy()
+        f2 = ml_acc(y_true,y_pred)
+        self.num_inst += labels[-1].asnumpy().shape[0]
+        self.sum_metric += f2

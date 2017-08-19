@@ -4,9 +4,7 @@ from utils.symbol import Symbol
 from operator_py.proposal import *
 from operator_py.proposal_target import *
 from operator_py.box_annotator_ohem import *
-from operator_py.roi_global_context import *
-
-class resnext101_32x4d_rcnn_dcn_context(Symbol):
+class resnext101_32x4d_rcnn_roialign(Symbol):
     def __init__(self):
         """
         Use __init__ to define parameter network needs
@@ -151,7 +149,7 @@ class resnext101_32x4d_rcnn_dcn_context(Symbol):
                                   bn_global=self.bn_global_)
         for j in range(self.units[i] - 1):
             body = self.residual_unit(body, self.filter_list[i + 1], (1, 1), True, name='stage%d_unit%d' % (i + 1, j + 2),
-                                      bottle_neck=True, workspace=self.workspace, bn_global=self.bn_global_,dilate=True,deform_conv=True)
+                                      bottle_neck=True, workspace=self.workspace, bn_global=self.bn_global_,dilate=True)
         return body
 
 
@@ -247,36 +245,21 @@ class resnext101_32x4d_rcnn_dcn_context(Symbol):
 
         conv_new_1 = mx.sym.Convolution(data=relu1, kernel=(1, 1), num_filter=256, name="conv_new_1")
         conv_new_1_relu = mx.sym.Activation(data=conv_new_1, act_type='relu', name='conv_new_1_relu')
-        #deform psroi
-        offset_t = mx.contrib.sym.DeformablePSROIPooling(name='offset_t', data=conv_new_1_relu, rois=rois, group_size=1, pooled_size=7,
-                                                         sample_per_part=4, no_trans=True, part_size=7, output_dim=256, spatial_scale=0.0625)
-        offset = mx.sym.FullyConnected(name='offset', data=offset_t, num_hidden=7 * 7 * 2, lr_mult=0.01)
-        offset_reshape = mx.sym.Reshape(data=offset, shape=(-1, 2, 7, 7), name="offset_reshape")
 
-        deformable_roi_pool = mx.contrib.sym.DeformablePSROIPooling(name='deformable_roi_pool', data=conv_new_1_relu, rois=rois,
-                                                                    trans=offset_reshape, group_size=1, pooled_size=7, sample_per_part=4,
-                                                                    no_trans=False, part_size=7, output_dim=256, spatial_scale=0.0625, trans_std=0.1)
-        expanded_roi = mx.sym.Custom(
-            op_type = 'roi_global_context',im_info = im_info,rois = rois
-        )
-        context_roi_pool = mx.symbol.ROIPooling(
-            name='origin_roi_pool', data=conv_new_1_relu, rois=expanded_roi, pooled_size=(7, 7), spatial_scale=0.0625)
+        #roi_pool = mx.symbol.ROIPooling(
+        #    name='roi_pool', data=conv_new_1_relu, rois=rois, pooled_size=(7, 7), spatial_scale=0.0625)
+        roi_align_pool = mx.contrib.sym.ROIAlign(
+            name='roi_pool', data=conv_new_1_relu, rois=rois, pooled_size=(7, 7), spatial_scale=0.0625)
 
-        # 2 fc dcn
-        fc_new_1 = mx.symbol.FullyConnected(name='fc_new_1', data=deformable_roi_pool, num_hidden=1024)
+        # 2 fc
+        fc_new_1 = mx.symbol.FullyConnected(name='fc_new_1', data=roi_align_pool, num_hidden=1024)
         fc_new_1_relu = mx.sym.Activation(data=fc_new_1, act_type='relu', name='fc_new_1_relu')
 
         fc_new_2 = mx.symbol.FullyConnected(name='fc_new_2', data=fc_new_1_relu, num_hidden=1024)
         fc_new_2_relu = mx.sym.Activation(data=fc_new_2, act_type='relu', name='fc_new_2_relu')
-        # 2fc context
-        fc_new_3 = mx.symbol.FullyConnected(name='fc_new_3', data=context_roi_pool, num_hidden=1024)
-        fc_new_3_relu = mx.sym.Activation(data=fc_new_3, act_type='relu', name='fc_new_3_relu')
 
-        fc_new_4 = mx.symbol.FullyConnected(name='fc_new_4', data=fc_new_3_relu, num_hidden=1024)
-        fc_new_4_relu = mx.sym.Activation(data=fc_new_4, act_type='relu', name='fc_new_4_relu')
-        fc_cls_concat = mx.sym.Concat(fc_new_4_relu,fc_new_2_relu,name = 'fc_cls_concat')
         # cls_score/bbox_pred
-        cls_score = mx.symbol.FullyConnected(name='cls_score', data=fc_cls_concat, num_hidden=num_classes)
+        cls_score = mx.symbol.FullyConnected(name='cls_score', data=fc_new_2_relu, num_hidden=num_classes)
         bbox_pred = mx.symbol.FullyConnected(name='bbox_pred', data=fc_new_2_relu, num_hidden=num_reg_classes * 4)
 
         if is_train:
@@ -319,23 +302,12 @@ class resnext101_32x4d_rcnn_dcn_context(Symbol):
         return group
 
     def init_weight_rcnn(self, cfg, arg_params, aux_params):
-        arg_params['stage4_unit2_conv2_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit2_conv2_offset_weight'])
-        arg_params['stage4_unit2_conv2_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit2_conv2_offset_bias'])
-        arg_params['stage4_unit3_conv2_offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit3_conv2_offset_weight'])
-        arg_params['stage4_unit3_conv2_offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['stage4_unit3_conv2_offset_bias'])
-        arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
         arg_params['conv_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['conv_new_1_weight'])
         arg_params['conv_new_1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['conv_new_1_bias'])
-        arg_params['offset_weight'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_weight'])
-        arg_params['offset_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['offset_bias'])
         arg_params['fc_new_1_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_1_weight'])
         arg_params['fc_new_1_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_1_bias'])
         arg_params['fc_new_2_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_2_weight'])
         arg_params['fc_new_2_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_2_bias'])
-        arg_params['fc_new_3_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_3_weight'])
-        arg_params['fc_new_3_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_3_bias'])
-        arg_params['fc_new_4_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['fc_new_4_weight'])
-        arg_params['fc_new_4_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['fc_new_4_bias'])
         arg_params['cls_score_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['cls_score_weight'])
         arg_params['cls_score_bias'] = mx.nd.zeros(shape=self.arg_shape_dict['cls_score_bias'])
         arg_params['bbox_pred_weight'] = mx.random.normal(0, 0.01, shape=self.arg_shape_dict['bbox_pred_weight'])

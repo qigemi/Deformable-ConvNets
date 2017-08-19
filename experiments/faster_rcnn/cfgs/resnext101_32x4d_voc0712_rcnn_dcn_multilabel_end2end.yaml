@@ -1,7 +1,7 @@
 ---
 MXNET_VERSION: "mxnet"
 output_path: "./output/rcnn/voc"
-symbol: resnext101_32x4d_rcnn_dcn_context
+symbol: resnext101_32x4d_rcnn_dcn_multilabel
 gpus: '2,3'
 CLASS_AGNOSTIC: false
 SCALES:
@@ -60,15 +60,15 @@ dataset:
   test_image_set: 2007_test
   proposal: rpn
 TRAIN:
-  lr: 0.0005
+  lr: 0.0001
   lr_step: '7'
   warmup: true
   warmup_lr: 0.00005
   # typically we will use 4000 warmup step for single GPU on VOC
   warmup_step: 1000
-  begin_epoch: 2
+  begin_epoch: 3
   end_epoch: 10
-  model_prefix: 'resnext101_32x4d_rcnn_dcn_context_voc'
+  model_prefix: 'resnext101_32x4d_rcnn_dcn_multilabel_voc'
   # whether resume training
   RESUME: true
   # whether flip image
