@@ -34,6 +34,7 @@ def parse_args():
     return args
 
 args = parse_args()
+args.ignore_cache = True
 curr_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(curr_path, '../external/mxnet', config.MXNET_VERSION))
 

@@ -2,7 +2,7 @@
 MXNET_VERSION: "mxnet"
 output_path: "./output/rcnn/voc"
 symbol: resnext101_32x4d_rcnn_dcn
-gpus: '2,3'
+gpus: '0,1'
 CLASS_AGNOSTIC: false
 SCALES:
 - 600
@@ -68,7 +68,7 @@ TRAIN:
   warmup_step: 1000
   begin_epoch: 0
   end_epoch: 10
-  model_prefix: 'resnext101_32x4d_rcnn_dcn_voc'
+  model_prefix: 'resnext101_32x4d_rcnn_dcn_coslr_voc'
   # whether resume training
   RESUME: false
   # whether flip image

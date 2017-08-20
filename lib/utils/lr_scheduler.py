@@ -8,7 +8,7 @@
 
 import logging
 from mxnet.lr_scheduler import LRScheduler
-
+import numpy as np
 class WarmupMultiFactorScheduler(LRScheduler):
     """Reduce learning rate in factor at steps specified in a list
 
@@ -65,3 +65,54 @@ class WarmupMultiFactorScheduler(LRScheduler):
             else:
                 return self.base_lr
         return self.base_lr
+DEBUG = False
+class WarmupConsineScheduler(LRScheduler):
+    """Reduce learning rate in factor at steps specified in a list
+
+    Assume the weight has been updated by n times, then the learning rate will
+    be
+
+    base_lr * factor^(sum((step/n)<=1)) # step is an array
+
+    Parameters
+    ----------
+    step: list of int
+        schedule learning rate after n updates
+    factor: float
+        the factor for reducing the learning rate
+    """
+    def __init__(self,max_epochs,iter_per_epoch, warmup=False, warmup_lr=0, warmup_step=0):
+        super(WarmupConsineScheduler, self).__init__()
+        self.cur_step_ind = 0
+        self.max_epochs = max_epochs
+        self.iter_per_epoch = iter_per_epoch
+        self.count = 0
+        self.warmup = warmup
+        self.warmup_lr = warmup_lr
+        self.warmup_step = warmup_step
+        if DEBUG:
+            lr_steps = [0.05 *self.base_lr* (np.cos(index * np.pi /self.max_epochs) + 1.0) for index in xrange(max_epochs)]
+            print lr_steps
+
+    def __call__(self, num_update):
+        """
+        Call to schedule current learning rate
+
+        Parameters
+        ----------
+        num_update: int
+            the maximal number of updates applied to a weight.
+        """
+
+        # NOTE: use while rather than if  (for continuing training via load_epoch)
+        if self.warmup and num_update < self.warmup_step:
+            return self.warmup_lr
+        else:
+            epoch = num_update/self.iter_per_epoch
+            self.base_lr = 0.5 *self.base_lr* (np.cos(epoch * np.pi /self.max_epochs) + 1.0)
+            if DEBUG:
+                print self.base_lr
+            if num_update%self.iter_per_epoch ==0:
+                logging.info("Update[%d]: Change learning rate to %0.5e",
+                             num_update, self.base_lr)
+            return self.base_lr

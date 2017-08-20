@@ -63,6 +63,7 @@ note: nms/soft-nms
 | Deformable R-FCN, ResNext101-32x4d w/o ohem    | VOC 07+12 trainval | VOC 07 test  | 81.67/82.16   | 67.83/70.66   | 0.16s(1080Ti) |
 | Deformable R-FCN, ResNext101-32x4d with ohem   | VOC 07+12 trainval | VOC 07 test  | 82.10/82.31   | 67.90/70.48   |  0.16s(1080Ti)|
 | Faster R-CNN (2fc), ResNext101-32x4d           | VOC 07+12 trainval | VOC 07 test  | 80.57/81.07   | 65.37/67.94   | 0.13s(1080Ti) |
+| Faster R-CNN (2fc), ResNext101-32x4d+ROIAlign  | VOC 07+12 trainval | VOC 07 test  | -/80.68   | -/67.79   | 0.14s(1080Ti) |3|4038/756|
 | Deformable Faster R-CNN (2fc),ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  | 82.37/82.65   | 69.77/72.08   | 0.17s(1080Ti) |
 | Deformable Faster R-CNN (2fc),air101           | VOC 07+12 trainval | VOC 07 test  |    - /79.38   | -/64.88       | 0.18s(1080Ti) |  3 |3920/825|
 | Deformable Faster R-CNN (2fc)+ROIPooling,ResNext101-32x4d | VOC 07+12 trainval | VOC 07 test  |    - /82.52        | -/71.11       | 0.18s(1080Ti) |  2.7 |4920/893|

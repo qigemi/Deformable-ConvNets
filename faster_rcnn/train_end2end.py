@@ -47,7 +47,7 @@ from utils.create_logger import create_logger
 from utils.load_data import load_gt_roidb, merge_roidb, filter_roidb
 from utils.load_model import load_param
 from utils.PrefetchingIter import PrefetchingIter
-from utils.lr_scheduler import WarmupMultiFactorScheduler
+from utils.lr_scheduler import *
 
 
 def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, lr_step):
@@ -141,9 +141,13 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     lr_epoch_diff = [epoch - begin_epoch for epoch in lr_epoch if epoch > begin_epoch]
     lr = base_lr * (lr_factor ** (len(lr_epoch) - len(lr_epoch_diff)))
     lr_iters = [int(epoch * len(roidb) / batch_size) for epoch in lr_epoch_diff]
-    print('lr', lr, 'lr_epoch_diff', lr_epoch_diff, 'lr_iters', lr_iters)
-    lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, config.TRAIN.warmup, config.TRAIN.warmup_lr, config.TRAIN.warmup_step)
+    max_epochs = config.TRAIN.end_epoch
+    iter_per_epoch = len(roidb)/batch_size
+    #print('lr', lr, 'lr_epoch_diff', lr_epoch_diff, 'lr_iters', lr_iters)
+    #lr_scheduler = WarmupMultiFactorScheduler(lr_iters, lr_factor, config.TRAIN.warmup, config.TRAIN.warmup_lr, config.TRAIN.warmup_step)
+    lr_scheduler = WarmupConsineScheduler(max_epochs,iter_per_epoch,config.TRAIN.warmup, config.TRAIN.warmup_lr, config.TRAIN.warmup_step)
     # optimizer
+    print 'lr',lr
     optimizer_params = {'momentum': config.TRAIN.momentum,
                         'wd': config.TRAIN.wd,
                         'learning_rate': lr,
